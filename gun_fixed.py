@@ -101,7 +101,7 @@ class Gun:
         global balls, bullet
         bullet += 1
         self.an = math.atan2((event.pos[1]-GUN_POSITION[1]), (event.pos[0]-GUN_POSITION[0]))
-        new_ball = Ball(self.screen, self.f2_power * math.cos(self.an), self.f2_power * math.sin(self.an))
+        new_ball = Ball(self.screen, (self.f2_power**0.5)*math.cos(self.an), (self.f2_power**0.5)*math.sin(self.an))
         balls.append(new_ball)
         self.f2_on = 0
         self.f2_power = 10
@@ -116,14 +116,14 @@ class Gun:
             self.color = GREY
 
     def draw(self):
-        length = self.f2_power
+        length = round(self.f2_power**0.5)
         end_point = (GUN_POSITION[0] + length*math.cos(self.an), GUN_POSITION[1] + length*math.sin(self.an))
         pygame.draw.line(screen, BLACK, (GUN_POSITION[0], GUN_POSITION[1]), end_point, 10)
 
     def power_up(self):
         if self.f2_on:
-            if self.f2_power < FPS:
-                self.f2_power += 5
+            if self.f2_power < 4225:
+                self.f2_power += 9750/FPS
             self.color = RED
         else:
             self.color = GREY
@@ -190,4 +190,3 @@ while not finished:
     gun.power_up()
 
 pygame.quit()
-
