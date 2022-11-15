@@ -8,15 +8,15 @@ from random import randint
 pygame.init()
 pygame.font.init()
 
-FPS = 30
+FPS = 60
 screen = pygame.display.set_mode((1000, 700))
 font = pygame.font.SysFont('Comic Sans MS', 30)
-ball_lifetime = FPS*10
-time_delay = FPS*5
+ball_lifetime = FPS*5
+time_delay = round(FPS*1)
 spawn_area = ((100, 900), (100, 600))
-delta_v = 10
+delta_v = round(450/FPS)
 r_max = 45
-r_min = 5
+r_min = 20
 minimal_points = 1
 
 RED = (255, 0, 0)
@@ -52,7 +52,9 @@ class ball:
         pygame.draw.circle(self.screen, self.color, (self.x, self.y), self.r)
 
 def value(a, b):
-    if a < 0.2:
+    if a < 0.1:
+        r_bonus = 3
+    elif a < 0.3:
         r_bonus = 2
     elif a < 0.5:
         r_bonus = 1.5
