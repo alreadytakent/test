@@ -84,7 +84,7 @@ class Ball:
 class Gun:
     def __init__(self, screen):
         self.screen = screen
-        self.f2_power = 10
+        self.f2_power = 400
         self.f2_on = 0
         self.an = 1
         self.color = GREY
@@ -104,7 +104,7 @@ class Gun:
         new_ball = Ball(self.screen, (self.f2_power**0.5)*math.cos(self.an), (self.f2_power**0.5)*math.sin(self.an))
         balls.append(new_ball)
         self.f2_on = 0
-        self.f2_power = 10
+        self.f2_power = 400
 
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
@@ -118,7 +118,7 @@ class Gun:
     def draw(self):
         length = round(self.f2_power**0.5)
         end_point = (GUN_POSITION[0] + length*math.cos(self.an), GUN_POSITION[1] + length*math.sin(self.an))
-        pygame.draw.line(screen, BLACK, (GUN_POSITION[0], GUN_POSITION[1]), end_point, 10)
+        pygame.draw.line(screen, BLACK, (GUN_POSITION[0], GUN_POSITION[1]), end_point, 5)
 
     def power_up(self):
         if self.f2_on:
