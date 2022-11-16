@@ -166,7 +166,7 @@ if closed:
 else:
     screen.fill(BLACK)
     text = score_font.render('Your score '+str(S), False, (255, 255, 255))
-    screen.blit(screen, text, (DISPLAY[0]/2, DISPLAY[1]/2))
-    while pygame.time.get_ticks()/1000 - time_limit < 5:
-        pass
+    screen.blit(text, (DISPLAY[0]/2 - 100, DISPLAY[1]/2 - 30))
+    pygame.display.update()
+    pygame.time.wait(1000*5)
     pygame.quit()

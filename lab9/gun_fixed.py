@@ -78,7 +78,6 @@ class Ball:
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
         if type(obj) == Target and (self.x - obj.x)**2 + (self.y - obj.y)**2 < (self.r + obj.r)**2:
-            print('hit')
             return True
         return False
 
@@ -151,6 +150,8 @@ class Target:
 
 
 pygame.init()
+pygame.font.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
