@@ -8,14 +8,18 @@ from random import randint
 pygame.font.init()
 
 FPS = 60
-DISPLAY = (1000, 700)
+DISPLAY = (1500, 700)
 screen = pygame.display.set_mode(DISPLAY)
 score_font = pygame.font.SysFont('Comic Sans MS', 30)
 time_font = pygame.font.SysFont('Comic Sans MS', 30)
+final_score_font_name = 'Comic Sans MS'
+question_font_name = 'Comic Sans MS'
+final_score_font_size = 50
+question_font_size = 30
 spawn_area = ((100, 900), (100, 600))
-time_limit = 10 #seconds
+time_limit = 30 #seconds
 
-Aim_trainer_mode = False
+Aim_trainer_mode = True
 
 if Aim_trainer_mode:
     ball_lifetime = time_limit*FPS
@@ -39,6 +43,9 @@ GREEN = (0, 255, 0)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+DARK_GRAY = (120, 120, 120)
+LIGHT_GRAY = (200, 200, 200)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 class ball:
@@ -91,6 +98,56 @@ def value(a, b):
     return int(minimal_points*r_bonus*v_bonus)
 
 
+class Button:
+    '''
+    Кнопка. Нужна, чтобы нарисовать прямоугольную кнопку. Функционал - подсвечивается, если
+    на неё наведён курсор, сообщает о нажатии, если на неё нажали.
+    '''
+    def __init__(self, coord=(DISPLAY[0]//2, DISPLAY[1]//2), size=(200, 50), 
+                 color0=DARK_GRAY, color1=LIGHT_GRAY):
+        self.x = coord[0]
+        self.y = coord[1]
+        self.width = size[0]
+        self.height = size[1]
+        self.color0 = color0 # Дефолтеый цвет 
+        self.color1 = color1 # Цвет, когда курсор над кнопкой
+   
+    def highlighted(self, x, y):
+        '''Возвращает True, если курсор над кнопкой
+        (x, y) - координаты курсора'''
+        if  self.x - self.width//2 < x < self.x + self.width//2:
+            if self.y - self.height//2 < y < self.y + self.height//2:
+                return True
+        return False
+    
+    def draw(self, pos):
+        if self.highlighted(pos[0], pos[1]):
+            color = self.color1
+        else:
+            color = self.color0
+        pygame.draw.rect(screen, color, pygame.Rect((self.x-self.width//2, self.y-self.height//2), 
+                                                    (self.width, self.height)))
+        pygame.draw.rect(screen, BLACK, pygame.Rect((self.x-self.width//2, self.y-self.height//2), 
+                                                    (self.width, self.height)), 2)
+
+class Text:
+    '''
+    Текст. Нужен, чтобы вывести текст с данным шрифтом на нужных координатах.
+    '''
+    def __init__(self, text, coord=(DISPLAY[0]//2, DISPLAY[1]//2), 
+                 font_name='Comic Sans MS', font_size=30, color=WHITE):
+        self.x = coord[0]
+        self.y = coord[1]
+        self.text = text
+        self.font_name = font_name
+        self.font_size = font_size
+        self.color = color
+        
+    def draw(self):
+        font = pygame.font.SysFont(self.font_name, self.font_size)
+        text = font.render(self.text, False, self.color)
+        screen.blit(text, (self.x - len(self.text)*self.font_size//4, self.y - self.font_size//2))
+
 def hit(x0, y0):
     '''сообщает, попал ли клик в шарик'''
     for b in balls:
@@ -98,14 +155,49 @@ def hit(x0, y0):
             return [True, b]
     return [False, 0]
 
+
 def text(S, t):
     '''выводит на экран число очков'''
     S_line = 'Score ' + str(S)
     t_line = 'Time ' + str(int((time_limit - t)*10)/10)
-    text_score = score_font.render(S_line, False, (255, 255, 255))
-    text_time = time_font.render(t_line, False, (255, 255, 255))
+    text_score = score_font.render(S_line, False, WHITE)
+    text_time = time_font.render(t_line, False, WHITE)
     screen.blit(text_score, (0, 0))
-    screen.blit(text_time, (DISPLAY[0]/2, 0))
+    screen.blit(text_time, (DISPLAY[0]/2 - 60, 0))
+    
+    
+def endgame():
+    finished = False
+    while not finished:
+        screen.fill(BLACK)
+        final_score = Text(str(S), (DISPLAY[0]//2, 
+                                    (DISPLAY[1]-final_score_font_size-question_font_size)//2-100), 
+                           final_score_font_name, final_score_font_size)
+        question = Text('Do you want to save your score?', (DISPLAY[0]//2, DISPLAY[1]//2-80))
+        yes_button = Button(((DISPLAY[0]-200)//2, DISPLAY[1]//2))
+        no_button = Button(((DISPLAY[0]+200)//2, DISPLAY[1]//2))
+        yes_text = Text('Yes', ((DISPLAY[0]-200)//2, (DISPLAY[1]-20)//2))
+        no_text = Text('No', ((DISPLAY[0]+200)//2, (DISPLAY[1]-20)//2))
+        final_score.draw()
+        question.draw()
+        yes_button.draw(pygame.mouse.get_pos())
+        no_button.draw(pygame.mouse.get_pos())
+        yes_text.draw()
+        no_text.draw()
+        pygame.display.update()
+        clock.tick(FPS)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+            elif event.type == pygame.MOUSEBUTTONUP: 
+                if no_button.highlighted(event.pos[0], event.pos[1]):
+                    print('clicked NO')
+                    finished = True
+                elif yes_button.highlighted(event.pos[0], event.pos[1]):
+                    print('clicked YES')
+
+    pass
     
 pygame.init()
 pygame.font.init()
@@ -164,9 +256,5 @@ while not finished:
 if closed:
     pygame.quit()
 else:
-    screen.fill(BLACK)
-    text = score_font.render('Your score '+str(S), False, (255, 255, 255))
-    screen.blit(text, (DISPLAY[0]/2 - 100, DISPLAY[1]/2 - 30))
-    pygame.display.update()
-    pygame.time.wait(1000*5)
+    endgame()
     pygame.quit()
