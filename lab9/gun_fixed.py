@@ -7,6 +7,7 @@ from random import randint
 import pygame
 
 FPS = 60
+g = 3
 
 RED = 0xFF0000
 BLUE = 0x0000FF
@@ -24,8 +25,6 @@ HEIGHT = 600
 BORDERS = (800, 550)
 GUN_POSITION = (50, 500)
 TARGET_SPAWN_AREA = ((500, 800), (0, 550))
-
-g = 3
 
 class Ball:
     def __init__(self, screen: pygame.Surface, vx=0, vy=0):
@@ -153,6 +152,8 @@ pygame.init()
 pygame.font.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+font = pygame.font.SysFont(None, 40)
+
 bullet = 0
 balls = []
 
@@ -165,6 +166,7 @@ score = 0
 while not finished:
     screen.fill(WHITE)
     pygame.draw.line(screen, BLACK, (0, BORDERS[1]), (WIDTH, BORDERS[1]))
+    screen.blit(font.render(str(score), False, BLACK), [20, 20])
     gun.draw()
     if target.live:    
         target.draw()

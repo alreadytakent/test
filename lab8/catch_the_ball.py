@@ -10,11 +10,14 @@ pygame.font.init()
 FPS = 60
 DISPLAY = (1200, 700)
 screen = pygame.display.set_mode(DISPLAY)
-font = pygame.font.SysFont(None, 50)
+
+def font(x=40):
+    return pygame.font.SysFont(None, x)
+
 spawn_area = ((100, 900), (100, 600))
 time_limit = 10 #seconds
 
-Aim_trainer_mode = True
+Aim_trainer_mode = False
 
 if Aim_trainer_mode:
     ball_lifetime = time_limit*FPS
@@ -38,6 +41,8 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 DARK_GRAY = (120, 120, 120)
 LIGHT_GRAY = (190, 190, 190)
+COLOR_INACTIVE = pygame.Color('lightskyblue3')
+COLOR_ACTIVE = pygame.Color('dodgerblue2')
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 class Ball:
@@ -104,6 +109,50 @@ class Button:
             pygame.draw.rect(screen, self.color1, self.rectangle)
         else:
             pygame.draw.rect(screen, self.color0, self.rectangle)
+        pygame.draw.rect(screen, BLACK, self.rectangle, 2)
+
+
+class InputBox:
+    def __init__(self, x=DISPLAY[0]//2, y=DISPLAY[1]//2, w=200, h=40, text=''):
+        self.x = x
+        self.rect = pygame.Rect(x-w//2, y-h//2, w, h)
+        self.color = COLOR_INACTIVE
+        self.text = text
+        self.txt_surface = font().render(text, True, self.color)
+        self.active = False
+        
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.active = not self.active
+            else:
+                self.active = False
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    
+                    with open("leaderboard.txt", "a") as f:
+                        f.write(self.text+' - '+str(S)+'\n')
+                    self.text = ''
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                self.txt_surface = font().render(self.text, True, self.color)
+
+    def update(self):
+        # Resize the box if the text is too long.
+        width = max(200, self.txt_surface.get_width()+10)
+        self.rect.w = width
+        self.rect.x = self.x - width//2
+
+    def draw(self, screen=screen):
+        # Blit the text.
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        # Blit the rect.
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
 
 def hit(x0, y0):
     '''сообщает, попал ли клик в шарик'''
@@ -112,9 +161,6 @@ def hit(x0, y0):
             return [True, b]
     return [False, 0]
 
-def input_box():
-    
-    pass
     
 def endgame():
     finished = False
@@ -122,8 +168,7 @@ def endgame():
     while not finished:
         screen.fill(BLACK)
         
-        show_text(str(S), (DISPLAY[0]//2, DISPLAY[1]//2 - 160))
-        show_text('Do you want to save your score?', (DISPLAY[0]//2, DISPLAY[1]//2-80))
+        show_text('Score '+str(S), (DISPLAY[0]//2, DISPLAY[1]//2 - 80), 70)
         
         yes_button = Button(pygame.Rect((DISPLAY[0]//2-200, (DISPLAY[1]-50)//2), (200, 50)))
         no_button = Button(pygame.Rect((DISPLAY[0]//2, (DISPLAY[1]-50)//2), (200, 50)))
@@ -131,8 +176,8 @@ def endgame():
         yes_button.draw(pygame.mouse.get_pos())
         no_button.draw(pygame.mouse.get_pos())
         
-        show_text('Yes', (DISPLAY[0]//2-100, DISPLAY[1]//2))
-        show_text('Try again', (DISPLAY[0]//2+100, DISPLAY[1]//2))
+        show_text('Save score', (DISPLAY[0]//2-100, DISPLAY[1]//2), 30)
+        show_text('Try again', (DISPLAY[0]//2+100, DISPLAY[1]//2), 30)
         
         pygame.display.update()
         clock.tick(FPS)
@@ -146,15 +191,28 @@ def endgame():
                 elif yes_button.rectangle.collidepoint(event.pos):
                     finished = True
                     saving_score = True
-    #if saving_score:
-    #    while saving_score:
-    #        pass
-            
+    if saving_score:
+        inputbox = InputBox()
+        while saving_score:
+            screen.fill(BLACK)
+            show_text('Enter your nickname', (DISPLAY[0]//2, DISPLAY[1]//2 - 80), 70)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    saving_score = False
+                if inputbox.active and event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    inputbox.handle_event(event)
+                    saving_score = False
+                else:
+                    inputbox.handle_event(event)
+                    inputbox.update()
+            inputbox.draw()
+            pygame.display.update()
+            clock.tick(FPS)
     pass
 
-def show_text(text, coord=(DISPLAY[0]//2, DISPLAY[1]//2)):
+def show_text(text, coord=(DISPLAY[0]//2, DISPLAY[1]//2), x=50):
     '''выводит текст на экран в центре заданных координат'''
-    text = font.render(text, False, WHITE)
+    text = font(x).render(text, False, WHITE)
     text_rect = text.get_rect(center=coord)
     screen.blit(text, text_rect)
     
